@@ -1,0 +1,35 @@
+# Architecture
+arch: VGGSmall_1w1a
+
+# ===== Dataset ===== #
+data: ./dataset
+set: CIFAR100
+name: baseline
+
+# ===== Learning Rate Policy ======== #
+optimizer: sgd
+lr: 0.1
+lr_policy: cosine_lr
+warmup_length: 5
+
+# ===== Network training config ===== #
+epochs: 600
+weight_decay: 0.0005
+momentum: 0.9
+batch_size: 256
+label_smoothing: 0.
+num_classes: 100
+trainers: ovsw
+
+# ===== Binary Neural Network ===== #
+conv_type: OvSWConv2d
+bn_type: BatchNorm2d
+init: kaiming_normal
+mode: fan_in
+forward_type: xnor
+nonlinearity: hardtanh
+act_a: binary
+act_w: ste
+
+# ===== Hardware setup ===== #
+workers: 8
