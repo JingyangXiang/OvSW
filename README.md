@@ -1,4 +1,4 @@
-# [ECCV 2024] OvSW: Overcoming Silent Weights for Accurate Binary Neural Networks ([Paper Link]())
+# [ECCV 2024] OvSW: Overcoming Silent Weights for Accurate Binary Neural Networks ([Paper Link](https://arxiv.org/abs/2407.05257))
 
 [Jingyang Xiang](https://jingyangxiang.github.io/), Zuohui Chen, Siqi Li, Qing Wu, [Yong Liu](https://april.zju.edu.cn/team/dr-yong-liu/)
 
