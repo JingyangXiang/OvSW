@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 
 import model
-from args import args
 
 
 class Builder(object):
@@ -60,7 +59,7 @@ class Builder(object):
         return self.bn_layer(planes, affine=affine)
 
     def activation(self, **kwargs):
-        nonlinearity = args.nonlinearity.lower()
+        nonlinearity = self.args.nonlinearity.lower()
         name_to_func = {
             "relu": nn.ReLU(inplace=True),
             "gelu": nn.GELU(),
@@ -72,16 +71,15 @@ class Builder(object):
         return name_to_func[nonlinearity]
 
     def _init_conv(self, conv):
+        args = self.args
         nonlinearity = "leaky_relu"
         if args.init == "signed_constant":
-
             fan = nn.init._calculate_correct_fan(conv.weight, args.mode)
             gain = nn.init.calculate_gain(nonlinearity)
             std = gain / math.sqrt(fan)
             conv.weight.data = conv.weight.data.sign() * std
 
         elif args.init == "unsigned_constant":
-
             fan = nn.init._calculate_correct_fan(conv.weight, args.mode)
             gain = nn.init.calculate_gain(nonlinearity)
             std = gain / math.sqrt(fan)
@@ -97,13 +95,11 @@ class Builder(object):
         elif args.init == "xavier_normal":
             nn.init.xavier_normal_(conv.weight)
         elif args.init == "xavier_constant":
-
             fan_in, fan_out = nn.init._calculate_fan_in_and_fan_out(conv.weight)
             std = math.sqrt(2.0 / float(fan_in + fan_out))
             conv.weight.data = conv.weight.data.sign() * std
 
         elif args.init == "standard":
-
             nn.init.kaiming_uniform_(conv.weight, a=math.sqrt(5))
 
         else:

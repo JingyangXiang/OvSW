@@ -1,10 +1,7 @@
 import copy
 import os
-import pathlib
-import random
 import time
 
-import numpy as np
 import torch
 import torch.nn as nn
 from ruamel import yaml
@@ -14,16 +11,19 @@ from torch.utils.tensorboard import SummaryWriter
 from utils.function import (
     get_dataset,
     get_directories,
-    get_model, get_optimizer,
+    get_model,
+    get_optimizer,
     get_trainer,
     pretrained,
     resume,
-    set_gpu
+    set_gpu,
 )
 from utils.logger import create_logger, prRed
 from utils.logging import AverageMeter, ProgressMeter
 from utils.net_utils import get_lr, get_parameters_num, init_model, save_checkpoint, update_epoch
+from utils.results import write_result_to_csv
 from utils.schedulers import get_policy
+from utils.seed import set_seed
 
 
 def main():
@@ -31,12 +31,7 @@ def main():
     print(args)
 
     if args.seed is not None:
-        os.environ['PYTHONHASHSEED'] = str(args.seed)
-        random.seed(args.seed)
-        np.random.seed(args.seed)
-        torch.manual_seed(args.seed)
-        torch.cuda.manual_seed(args.seed)
-        torch.cuda.manual_seed_all(args.seed)
+        set_seed(args.seed)
 
     # Simply call main_worker function
     if hasattr(args, "distributed") and args.distributed:
@@ -196,7 +191,7 @@ def main_worker(args):
         end_epoch = time.time()
 
     device_target = torch.cuda.get_device_name()
-    write_result_to_csv_scrach(
+    write_result_to_csv(
         arch=args.arch,
         set=args.set,
         base_config=args.config,
@@ -229,91 +224,8 @@ def main_worker(args):
         track_momentum=args.track_momentum,
         track_threshold=args.track_threshold,
         dampen_weight=args.dampen_weight,
-        enable_ags=args.enable_ags
+        enable_ags=args.enable_ags,
     )
-
-
-def write_result_to_csv_scrach(**kwargs):
-    results = pathlib.Path("runs") / f"train_{kwargs.get('arch')}_from_scrach.csv"
-
-    if not results.exists():
-        results.write_text(
-            "Date Finished, "
-            "Base Config, "
-            "Name, "
-            "Arch, "
-            "Set, "
-            "Current Val Top 1, "
-            "Current Val Top 5, "
-            "Best Val Top 1, "
-            "Best Val Top 5, "
-            "Best Train Top 1, "
-            "Best Train Top 5, "
-            "Device Target, "
-            "Epochs, "
-            "Optimizer, "
-            "Weight Decay, "
-            "Warmup Length, "
-            "Seed, "
-            "Forward Type, "
-            "Nesterov, "
-            "NoBnDecay, "
-            "Trainers, "
-            "LearningRate, "
-            "BatchSize, "
-            "ConvType, "
-            "BnType, "
-            "Nonlinearity, "
-            "ActActivation, "
-            "ActWeight, "
-            "Delta, "
-            "Enable Dampening, "
-            "Track Momentum, "
-            "Track Threshold, "
-            "Dampen Weight, "
-            "Enable Ags\n"
-        )
-
-    now = time.strftime("%m-%d-%y_%H:%M:%S")
-
-    with open(results, "a+") as f:
-        f.write(
-            ("{now}, "
-             "{base_config}, "
-             "{name}, "
-             "{arch}, "
-             "{set}, "
-             "{curr_acc1:.02f}, "
-             "{curr_acc5:.02f}, "
-             "{best_acc1:.02f}, "
-             "{best_acc5:.02f}, "
-             "{best_train_acc1:.02f}, "
-             "{best_train_acc5:.02f}, "
-             "{device_target}, "
-             "{epochs}, "
-             "{optimizer}, "
-             "{weight_decay}, "
-             "{warmup_length}, "
-             "{seed}, "
-             "{forward_type}, "
-             "{nesterov}, "
-             "{no_bn_decay}, "
-             "{trainers}, "
-             "{lr}, "
-             "{batch_size}, "
-             "{conv_type}, "
-             "{bn_type}, "
-             "{nonlinearity}, "
-             "{act_a}, "
-             "{act_w}, "
-             "{delta}, "
-             "{enable_dampen}, "
-             "{track_momentum}, "
-             "{track_threshold}, "
-             "{dampen_weight}, "
-             "{enable_ags}\n"
-             ).format(now=now, **kwargs)
-        )
 
 
 if __name__ == "__main__":
