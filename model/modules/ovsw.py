@@ -106,7 +106,7 @@ class OvSWConv2d(nn.Conv2d):
             # 3. 更新梯度
             self.weight.grad = grad
 
-            # uodate weight_prev
+            # update weight_prev
             self.weight_prev.data = self.weight.data.clone()
             return torch.mean(condition_track * 1.)
 

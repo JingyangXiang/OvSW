@@ -147,15 +147,14 @@ def get_directories(args):
 
 
 def get_optimizer(args, model, logger):
-    for n, v in model.named_parameters():
-        if v.requires_grad:
-            logger.info(f"<DEBUG> gradient to {n}")
-
-        if not v.requires_grad:
-            logger.info(f"<DEBUG> no gradient to {n}")
+    parameters = list(model.named_parameters())
+    for name, param in parameters:
+        if param.requires_grad:
+            logger.info(f"<DEBUG> gradient to {name}")
+        else:
+            logger.info(f"<DEBUG> no gradient to {name}")
 
     if args.optimizer == "sgd":
-        parameters = list(model.named_parameters())
         bn_params = [v for n, v in parameters if len(v.shape) == 1 and v.requires_grad]
         rest_params = [v for n, v in parameters if len(v.shape) != 1 and v.requires_grad]
         optimizer = torch.optim.SGD(

@@ -1,11 +1,11 @@
 import time
 
-import torch
 import tqdm
 from torch.cuda.amp import autocast, GradScaler
 
 from utils.eval_utils import accuracy
 from utils.logging import AverageMeter, ProgressMeter
+from utils.ovsw_hooks import apply_ovsw_grad_updates
 
 __all__ = ["train", "validate"]
 
@@ -49,16 +49,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args, writer):
         scaler.scale(loss).backward()
 
         scaler.unscale_(optimizer)
-
-        for module in model.modules():
-            if hasattr(module, 'adaptive_gradient_scale'):
-                ratio = module.adaptive_gradient_scale()
-                if i == 0 and args.enable_ags:
-                    args.logger.info(f"Epoch [{epoch}]: {ratio.detach().cpu().item():.5f}")
-            if hasattr(module, "conditional_dampening"):
-                ratio = module.conditional_dampening()
-                if i == 0 and args.enable_dampen and ratio is not None:
-                    args.logger.info(f"Epoch [{epoch}]: {ratio.detach().cpu().item() * 100:.5f}%")
+        apply_ovsw_grad_updates(model, args, epoch, log_epoch_metrics=(i == 0))
 
         scaler.step(optimizer)
         scaler.update()

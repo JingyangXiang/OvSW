@@ -62,7 +62,7 @@ def parse_arguments():
     parser.add_argument("--score-init-constant", type=float, default=None, help="Sample Baseline Subnet Init")
 
     # Binary Network related
-    parser.add_argument("--forward-type", type=str, required=True, help="Binart type.")
+    parser.add_argument("--forward-type", type=str, required=True, help="Binary type.")
     parser.add_argument("--act-a", default="binary", type=str, help="Binary Func to activation.")
     parser.add_argument("--act-w", default="ste", type=str, help="Binary Func to weight.")
 
